@@ -1,0 +1,50 @@
+Python
+
+----------------
+
+Byte-compiled / optimized / DLL files
+
+pycache/
+*.pyc
+*.pyo
+*.pyd
+
+Virtual environment
+
+This is the most important one!
+
+venv/
+.venv/
+env/
+.env
+
+Jupyter Notebook checkpoints
+
+.ipynb_checkpoints
+
+OS-specific
+
+----------------
+
+.DS_Store
+Thumbs.db
+
+Node.js
+
+----------------
+
+The other most important one!
+
+node_modules/
+.next/
+npm-debug.log
+yarn-error.log
+
+Raw Data
+
+----------------
+
+We add this to prevent committing the large, raw data files
+
+*.csv
+*.xpt
