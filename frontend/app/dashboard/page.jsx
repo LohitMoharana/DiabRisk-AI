@@ -312,7 +312,7 @@ export default function DashboardPage() {
         {/* --- Scatterplot (now with 250 points) --- */}
         <ChartCard title="Data Visualization (Simulated)" icon={<Users />}>
           <h4 className="text-sm -mt-4 mb-4 text-gray-400">Relationship between Age and BMI, colored by class. This helps visualize the model's decision boundary.</h4>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" className="text-white">
             <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
               <XAxis
