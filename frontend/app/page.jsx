@@ -24,7 +24,7 @@ import {
   TrendingUp, // For SHAP
   TrendingDown // For SHAP
 } from 'lucide-react';
-// import Link from 'next/link'; // <-- REMOVED THIS LINE
+// We use a regular <a> tag for navigation from the dashboard, so no 'next/link' needed.
 
 // --- 1. Re-usable Form Components ---
 
@@ -58,8 +58,8 @@ const Tooltip = ({ text, children }) => {
   );
 };
 
-// --- FIX 2 & 3: Added accessibility (htmlFor/id) and validation (min/max) ---
-const Input = ({ label, name, type = "number", value, onChange, placeholder, icon, tooltip, min, max }) => (
+// --- FIX: Added step="any" and min/max props ---
+const Input = ({ label, name, type = "number", value, onChange, placeholder, icon, tooltip, min }) => (
   <div className="relative w-full">
     <label
       htmlFor={name} // <-- ACCESSIBILITY FIX
@@ -72,17 +72,17 @@ const Input = ({ label, name, type = "number", value, onChange, placeholder, ico
       id={name} // <-- ACCESSIBILITY FIX
       name={name}
       type={type}
+      step="any" // <-- Explicitly allows floats
       value={value === null ? '' : value}
       onChange={onChange}
       placeholder={placeholder}
       min={min} // <-- VALIDATION FIX
-      max={max} // <-- VALIDATION FIX
       className="w-full pl-10 pr-4 py-2 bg-black/50 text-gray-100 border border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 focus:shadow-[0_0_15px_rgba(192,132,252,0.3)] font-sans"
     />
   </div>
 );
 
-// --- FIX 2: Added accessibility (htmlFor/id) ---
+// --- ACCESSIBILITY FIX (htmlFor/id) ---
 const Select = ({ label, name, value, onChange, children, icon, tooltip }) => (
   <div className="relative w-full">
     <label
@@ -581,7 +581,7 @@ export default function Home() {
                 >
                   <h3 className="text-lg font-semibold mb-4 flex items-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"><User className="mr-2 text-purple-400" />Demographics</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input label="Age" name="AGE" value={formData.AGE} onChange={handleAgeChange} placeholder="e.g., 55" icon={<User size={18} />} min={18} max={120} />
+                    <Input label="Age" name="AGE" value={formData.AGE} onChange={handleAgeChange} placeholder="e.g., 55" icon={<User size={18} />} min={0} />
                     <Select label="Sex" name="SEX" value={formData.SEX} onChange={handleChange} icon={<User size={18} />}>
                       <option value="null">Select...</option>
                       <option value="1">Male</option>
@@ -605,7 +605,7 @@ export default function Home() {
                       placeholder="e.g., 29.5"
                       icon={<Scale size={18} />}
                       tooltip="Calculated as weight (kg) / height (m)². Don't worry if you don't know, our AI can estimate."
-                      min={10} max={100}
+                      min={0}
                     />
                     <Input
                       label="Waist-to-Height Ratio"
@@ -615,7 +615,7 @@ export default function Home() {
                       placeholder="e.g., 0.58"
                       icon={<Scale size={18} />}
                       tooltip="Your waist circumference divided by your height. A value > 0.5 is a high-risk indicator."
-                      min={0.2} max={2.0}
+                      min={0}
                     />
                   </div>
                 </motion.div>
@@ -627,8 +627,8 @@ export default function Home() {
                 >
                   <h3 className="text-lg font-semibold mb-4 flex items-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"><HeartPulse className="mr-2 text-purple-400" />Blood Pressure</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input label="Systolic (Top #)" name="SBP_MEAN" value={formData.SBP_MEAN} onChange={handleChange} placeholder="e.g., 135" icon={<HeartPulse size={18} />} min={50} max={300} />
-                    <Input label="Diastolic (Bottom #)" name="DBP_MEAN" value={formData.DBP_MEAN} onChange={handleChange} placeholder="e.g., 88" icon={<HeartPulse size={18} />} min={30} max={200} />
+                    <Input label="Systolic (Top #)" name="SBP_MEAN" value={formData.SBP_MEAN} onChange={handleChange} placeholder="e.g., 135" icon={<HeartPulse size={18} />} min={0} />
+                    <Input label="Diastolic (Bottom #)" name="DBP_MEAN" value={formData.DBP_MEAN} onChange={handleChange} placeholder="e.g., 88" icon={<HeartPulse size={18} />} min={0} />
                     <Select label="Hypertension" name="HYPERTENSION_FLAG" value={formData.HYPERTENSION_FLAG} onChange={handleChange} icon={<HeartPulse size={18} />}>
                       <option value="null">Select...</option>
                       <option value="0">No</option>
@@ -644,9 +644,9 @@ export default function Home() {
                 >
                   <h3 className="text-lg font-semibold mb-4 flex items-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"><Droplet className="mr-2 text-purple-400" />Lab Results (Optional)</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input label="Total Cholesterol" name="TCHOL" value={formData.TCHOL} onChange={handleChange} placeholder="e.g., 210" icon={<Droplet size={18} />} min={50} max={500} />
-                    <Input label="HDL ('Good' Chol.)" name="HDL" value={formData.HDL} onChange={handleChange} placeholder="e.g., 45" icon={<Droplet size={18} />} min={10} max={200} />
-                    <Input label="Triglycerides" name="TRIG" value={formData.TRIG} onChange={handleChange} placeholder="e.g., 150" icon={<Droplet size={18} />} min={20} max={1000} />
+                    <Input label="Total Cholesterol" name="TCHOL" value={formData.TCHOL} onChange={handleChange} placeholder="e.g., 210" icon={<Droplet size={18} />} min={0} />
+                    <Input label="HDL ('Good' Chol.)" name="HDL" value={formData.HDL} onChange={handleChange} placeholder="e.g., 45" icon={<Droplet size={18} />} min={0} />
+                    <Input label="Triglycerides" name="TRIG" value={formData.TRIG} onChange={handleChange} placeholder="e.g., 150" icon={<Droplet size={18} />} min={0} />
                     <Input
                       label="Chol/HDL Ratio"
                       name="CHOL_HDL_RATIO"
@@ -655,7 +655,7 @@ export default function Home() {
                       placeholder="e.g., 4.6"
                       icon={<Droplet size={18} />}
                       tooltip="Total Cholesterol divided by HDL. Lower is better."
-                      min={1} max={20}
+                      min={0}
                     />
                     <Input
                       label="Trig/HDL Ratio"
@@ -665,7 +665,7 @@ export default function Home() {
                       placeholder="e.g., 3.3"
                       icon={<Droplet size={18} />}
                       tooltip="Triglycerides divided by HDL. A strong indicator of insulin resistance. Lower is better."
-                      min={0.1} max={30}
+                      min={0}
                     />
                     <Input
                       label="ACR (Urine)"
@@ -675,7 +675,7 @@ export default function Home() {
                       placeholder="e.g., 15"
                       icon={<Droplet size={18} />}
                       tooltip="Albumin-to-Creatinine Ratio. Measures early kidney damage."
-                      min={0} max={500}
+                      min={0}
                     />
                   </div>
                 </motion.div>
@@ -701,7 +701,7 @@ export default function Home() {
                       placeholder="e.g., 100"
                       icon={<Activity size={18} />}
                       tooltip="A score based on your weekly exercise. More is better. (MET-minutes/week)"
-                      min={0} max={5000}
+                      min={0}
                     />
                   </div>
                 </motion.div>
