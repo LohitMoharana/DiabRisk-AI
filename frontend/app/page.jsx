@@ -3,7 +3,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
+import {
+  BarChart, Bar, XAxis, YAxis, ResponsiveContainer,
+  Tooltip as RechartsTooltip
+} from 'recharts';
 import {
   Droplet,
   HeartPulse,
@@ -17,10 +20,15 @@ import {
   ChevronDown,
   Info,
   Zap,
-  Loader2
+  Loader2, // For spinner
+  TrendingUp, // For SHAP
+  TrendingDown // For SHAP
 } from 'lucide-react';
+// import Link from 'next/link'; // <-- REMOVED THIS LINE
 
+// --- 1. Re-usable Form Components ---
 
+// Tooltip Component
 const Tooltip = ({ text, children }) => {
   const [isHovered, setIsHovered] = useState(false);
   return (
@@ -50,30 +58,42 @@ const Tooltip = ({ text, children }) => {
   );
 };
 
-const Input = ({ label, name, type = "number", value, onChange, placeholder, icon, tooltip }) => (
+// --- FIX 2 & 3: Added accessibility (htmlFor/id) and validation (min/max) ---
+const Input = ({ label, name, type = "number", value, onChange, placeholder, icon, tooltip, min, max }) => (
   <div className="relative w-full">
-    <label className="block text-xs uppercase tracking-wider font-medium text-gray-400 mb-1.5 flex items-center">
+    <label
+      htmlFor={name} // <-- ACCESSIBILITY FIX
+      className="block text-xs uppercase tracking-wider font-medium text-gray-400 mb-1.5 flex items-center"
+    >
       {tooltip ? <Tooltip text={tooltip}>{label}</Tooltip> : label}
     </label>
     <div className="absolute left-3 top-9 text-gray-400">{icon}</div>
     <input
+      id={name} // <-- ACCESSIBILITY FIX
       name={name}
       type={type}
       value={value === null ? '' : value}
       onChange={onChange}
       placeholder={placeholder}
+      min={min} // <-- VALIDATION FIX
+      max={max} // <-- VALIDATION FIX
       className="w-full pl-10 pr-4 py-2 bg-black/50 text-gray-100 border border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 focus:shadow-[0_0_15px_rgba(192,132,252,0.3)] font-sans"
     />
   </div>
 );
 
+// --- FIX 2: Added accessibility (htmlFor/id) ---
 const Select = ({ label, name, value, onChange, children, icon, tooltip }) => (
   <div className="relative w-full">
-    <label className="block text-xs uppercase tracking-wider font-medium text-gray-400 mb-1.5 flex items-center">
+    <label
+      htmlFor={name} // <-- ACCESSIBILITY FIX
+      className="block text-xs uppercase tracking-wider font-medium text-gray-400 mb-1.5 flex items-center"
+    >
       {tooltip ? <Tooltip text={tooltip}>{label}</Tooltip> : label}
     </label>
     <div className="absolute left-3 top-9 text-gray-400">{icon}</div>
     <select
+      id={name} // <-- ACCESSIBILITY FIX
       name={name}
       value={value === null ? '' : value}
       onChange={onChange}
@@ -141,9 +161,85 @@ const RiskGauge = ({ probability }) => {
   );
 };
 
-// --- 3. Results Card Component ---
+// --- 3. NEW: XAI/SHAP Chart Component ---
+const ShapChart = ({ shapData }) => {
+  if (!shapData || shapData.length === 0) return null;
+
+  // Separate positive (increase risk) and negative (decrease risk)
+  const positive = shapData.filter(d => d.value > 0).sort((a, b) => b.value - a.value).slice(0, 5);
+  const negative = shapData.filter(d => d.value < 0).sort((a, b) => a.value - b.value).slice(0, 5);
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-gray-800 p-2 border border-gray-700 rounded-lg shadow-lg">
+          <p className="text-white text-sm">{`${label} : ${payload[0].value.toFixed(3)} (SHAP Value)`}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  return (
+    <div className="mt-6">
+      <h3 className="text-lg font-semibold mb-4 text-gray-200">Your Personalized Risk Factors</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Factors Increasing Risk */}
+        <div>
+          <h4 className="flex items-center text-pink-400 font-semibold mb-2">
+            <TrendingUp size={18} className="mr-2" />
+            Factors Increasing Risk
+          </h4>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={positive} layout="vertical" margin={{ left: 25 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
+              <XAxis type="number" stroke="#9ca3af" tick={{ fill: '#d1d5db', fontSize: 12 }} />
+              <YAxis
+                dataKey="feature"
+                type="category"
+                width={100}
+                stroke="#9ca3af"
+                tick={{ fill: '#d1d5db', fontSize: 12 }}
+                axisLine={false}
+              />
+              <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(244, 114, 182, 0.1)' }} />
+              <Bar dataKey="value" fill="#f472b6" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Factors Decreasing Risk */}
+        <div>
+          <h4 className="flex items-center text-green-400 font-semibold mb-2">
+            <TrendingDown size={18} className="mr-2" />
+            Factors Decreasing Risk
+          </h4>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={negative} layout="vertical" margin={{ left: 25 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
+              <XAxis type="number" stroke="#9ca3af" tick={{ fill: '#d1d5db', fontSize: 12 }} />
+              <YAxis
+                dataKey="feature"
+                type="category"
+                width={100}
+                stroke="#9ca3af"
+                tick={{ fill: '#d1d5db', fontSize: 12 }}
+                axisLine={false}
+              />
+              <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(74, 222, 128, 0.1)' }} />
+              <Bar dataKey="value" fill="#4ade80" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+// --- 4. Results Card Component ---
 const ResultsCard = ({ result, onReset }) => {
-  const { risk_probability, risk_level, advice } = result;
+  const { risk_probability, risk_level, advice, shap_values } = result;
 
   const topicIcons = {
     "Urgent": <AlertTriangle className="text-pink-400" />,
@@ -167,12 +263,14 @@ const ResultsCard = ({ result, onReset }) => {
 
   return (
     <motion.div
-      className="w-full max-w-2xl p-6 bg-black/70 backdrop-blur-md rounded-lg shadow-xl border border-gray-800/50"
+      className="w-full max-w-4xl p-6 bg-black/70 backdrop-blur-md rounded-lg shadow-xl border border-gray-800/50"
       variants={cardVariants}
       initial="hidden"
       animate="visible"
     >
       <h2 className="text-2xl font-bold text-center text-gray-100 mb-4">Your Risk Assessment</h2>
+
+      {/* Top Section: Gauge + Advice */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
         <motion.div
           className="flex flex-col items-center"
@@ -217,6 +315,17 @@ const ResultsCard = ({ result, onReset }) => {
           </motion.ul>
         </motion.div>
       </div>
+
+      {/* Bottom Section: SHAP Chart */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5, duration: 0.5 }}
+      >
+        <ShapChart shapData={shap_values} />
+      </motion.div>
+
+      {/* Reset Button */}
       <motion.button
         onClick={onReset}
         className="w-full mt-8 px-4 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-600 text-white font-semibold rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-gray-950 bg-[length:200%_auto] animate-gradient-pan"
@@ -230,7 +339,7 @@ const ResultsCard = ({ result, onReset }) => {
   );
 };
 
-// --- 4. Dynamic Background Glow Component ---
+// --- 5. Dynamic Background Glow Component ---
 const AnimatedGlow = ({ className }) => <div className={className} />;
 
 const getBackgroundGlows = (risk) => {
@@ -272,7 +381,7 @@ const getBackgroundGlows = (risk) => {
 };
 
 
-// --- 5. Main App Component (page.jsx) ---
+// --- 6. Main App Component (page.jsx) ---
 export default function Home() {
   const [formData, setFormData] = useState({
     AGE: null, AGE_BIN: null, SEX: null, BMI: null, BMI_CLASS: null,
@@ -335,12 +444,13 @@ export default function Home() {
     setIsLoading(true);
     setError(null);
     setResult(null);
+
+    // --- THIS IS THE CRITICAL DEPLOYMENT FIX ---
     const apiUrl = process.env.NEXT_PUBLIC_API_URL
-  ? `${process.env.NEXT_PUBLIC_API_URL}/predict`  // For Vercel (Production)
-  : "http://127.0.0.1:5000/predict";           // For Localhost (Development)
+      ? `${process.env.NEXT_PUBLIC_API_URL}/predict`  // For Vercel (Production)
+      : "http://127.0.0.1:5000/predict";           // For Localhost (Development)
+
     try {
-      // Fake delay for demo purposes
-      // await new Promise(res => setTimeout(res, 1500));
       const response = await axios.post(apiUrl, formData);
       setResult(response.data);
     } catch (err) {
@@ -471,7 +581,7 @@ export default function Home() {
                 >
                   <h3 className="text-lg font-semibold mb-4 flex items-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"><User className="mr-2 text-purple-400" />Demographics</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Input label="Age" name="AGE" value={formData.AGE} onChange={handleAgeChange} placeholder="e.g., 55" icon={<User size={18} />} />
+                    <Input label="Age" name="AGE" value={formData.AGE} onChange={handleAgeChange} placeholder="e.g., 55" icon={<User size={18} />} min={18} max={120} />
                     <Select label="Sex" name="SEX" value={formData.SEX} onChange={handleChange} icon={<User size={18} />}>
                       <option value="null">Select...</option>
                       <option value="1">Male</option>
@@ -495,6 +605,7 @@ export default function Home() {
                       placeholder="e.g., 29.5"
                       icon={<Scale size={18} />}
                       tooltip="Calculated as weight (kg) / height (m)². Don't worry if you don't know, our AI can estimate."
+                      min={10} max={100}
                     />
                     <Input
                       label="Waist-to-Height Ratio"
@@ -504,6 +615,7 @@ export default function Home() {
                       placeholder="e.g., 0.58"
                       icon={<Scale size={18} />}
                       tooltip="Your waist circumference divided by your height. A value > 0.5 is a high-risk indicator."
+                      min={0.2} max={2.0}
                     />
                   </div>
                 </motion.div>
@@ -515,8 +627,8 @@ export default function Home() {
                 >
                   <h3 className="text-lg font-semibold mb-4 flex items-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"><HeartPulse className="mr-2 text-purple-400" />Blood Pressure</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input label="Systolic (Top #)" name="SBP_MEAN" value={formData.SBP_MEAN} onChange={handleChange} placeholder="e.g., 135" icon={<HeartPulse size={18} />} />
-                    <Input label="Diastolic (Bottom #)" name="DBP_MEAN" value={formData.DBP_MEAN} onChange={handleChange} placeholder="e.g., 88" icon={<HeartPulse size={18} />} />
+                    <Input label="Systolic (Top #)" name="SBP_MEAN" value={formData.SBP_MEAN} onChange={handleChange} placeholder="e.g., 135" icon={<HeartPulse size={18} />} min={50} max={300} />
+                    <Input label="Diastolic (Bottom #)" name="DBP_MEAN" value={formData.DBP_MEAN} onChange={handleChange} placeholder="e.g., 88" icon={<HeartPulse size={18} />} min={30} max={200} />
                     <Select label="Hypertension" name="HYPERTENSION_FLAG" value={formData.HYPERTENSION_FLAG} onChange={handleChange} icon={<HeartPulse size={18} />}>
                       <option value="null">Select...</option>
                       <option value="0">No</option>
@@ -532,9 +644,9 @@ export default function Home() {
                 >
                   <h3 className="text-lg font-semibold mb-4 flex items-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400"><Droplet className="mr-2 text-purple-400" />Lab Results (Optional)</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <Input label="Total Cholesterol" name="TCHOL" value={formData.TCHOL} onChange={handleChange} placeholder="e.g., 210" icon={<Droplet size={18} />} />
-                    <Input label="HDL ('Good' Chol.)" name="HDL" value={formData.HDL} onChange={handleChange} placeholder="e.g., 45" icon={<Droplet size={18} />} />
-                    <Input label="Triglycerides" name="TRIG" value={formData.TRIG} onChange={handleChange} placeholder="e.g., 150" icon={<Droplet size={18} />} />
+                    <Input label="Total Cholesterol" name="TCHOL" value={formData.TCHOL} onChange={handleChange} placeholder="e.g., 210" icon={<Droplet size={18} />} min={50} max={500} />
+                    <Input label="HDL ('Good' Chol.)" name="HDL" value={formData.HDL} onChange={handleChange} placeholder="e.g., 45" icon={<Droplet size={18} />} min={10} max={200} />
+                    <Input label="Triglycerides" name="TRIG" value={formData.TRIG} onChange={handleChange} placeholder="e.g., 150" icon={<Droplet size={18} />} min={20} max={1000} />
                     <Input
                       label="Chol/HDL Ratio"
                       name="CHOL_HDL_RATIO"
@@ -543,6 +655,7 @@ export default function Home() {
                       placeholder="e.g., 4.6"
                       icon={<Droplet size={18} />}
                       tooltip="Total Cholesterol divided by HDL. Lower is better."
+                      min={1} max={20}
                     />
                     <Input
                       label="Trig/HDL Ratio"
@@ -552,6 +665,7 @@ export default function Home() {
                       placeholder="e.g., 3.3"
                       icon={<Droplet size={18} />}
                       tooltip="Triglycerides divided by HDL. A strong indicator of insulin resistance. Lower is better."
+                      min={0.1} max={30}
                     />
                     <Input
                       label="ACR (Urine)"
@@ -561,6 +675,7 @@ export default function Home() {
                       placeholder="e.g., 15"
                       icon={<Droplet size={18} />}
                       tooltip="Albumin-to-Creatinine Ratio. Measures early kidney damage."
+                      min={0} max={500}
                     />
                   </div>
                 </motion.div>
@@ -586,10 +701,23 @@ export default function Home() {
                       placeholder="e.g., 100"
                       icon={<Activity size={18} />}
                       tooltip="A score based on your weekly exercise. More is better. (MET-minutes/week)"
+                      min={0} max={5000}
                     />
                   </div>
                 </motion.div>
               </div>
+
+              {/* --- FIX 1: MEDICAL DISCLAIMER --- */}
+              <motion.div
+                className="mt-6 text-center text-amber-400 text-xs bg-amber-900/20 p-3 rounded-lg border border-amber-700 flex items-center justify-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <AlertTriangle size={16} className="mr-2 flex-shrink-0" />
+                <p><strong>Disclaimer:</strong> DiabRisk AI is for informational purposes only and does not constitute medical advice. Please consult a healthcare professional for a real diagnosis.</p>
+              </motion.div>
+
 
               {/* Error Message */}
               {error && (
@@ -626,15 +754,16 @@ export default function Home() {
         </AnimatePresence>
 
         <footer className="mt-8 text-center text-gray-500 text-sm">
-  <p>
-    © {new Date().getFullYear()} DiabRisk AI · Powered by FastAPI + Next.js
-  </p>
-  <p className="mt-2">
-    <Link href="/dashboard" className="text-purple-400 hover:text-purple-300 transition-colors hover:underline">
-      View Model Details & Dashboard
-    </Link>
-  </p>
-</footer>
+          <p>
+            © {new Date().getFullYear()} DiabRisk AI · Powered by FastAPI + Next.js
+          </p>
+          <p className="mt-2">
+            {/* --- FIX: Replaced <Link> with <a> --- */}
+            <a href="/dashboard" className="text-purple-400 hover:text-purple-300 transition-colors hover:underline">
+              View Model Details & Dashboard
+            </a>
+          </p>
+        </footer>
     </div>
     </main>
   );

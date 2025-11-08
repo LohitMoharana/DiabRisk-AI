@@ -309,10 +309,10 @@ export default function DashboardPage() {
           </ChartCard>
         </div>
 
-        {/* --- Scatterplot (now with 250 points) --- */}
+        {/* --- Scatterplot (with 250 points) --- */}
         <ChartCard title="Data Visualization (Simulated)" icon={<Users />}>
           <h4 className="text-sm -mt-4 mb-4 text-gray-400">Relationship between Age and BMI, colored by class. This helps visualize the model's decision boundary.</h4>
-          <ResponsiveContainer width="100%" height="100%" className="text-white">
+          <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#404040" />
               <XAxis
@@ -330,14 +330,33 @@ export default function DashboardPage() {
                 stroke="#9ca3af"
                 tick={{ fill: '#d1d5db' }}
               />
+              {/* --- 1. TOOLTIP & GLOW FIXES --- */}
               <Tooltip
                 cursor={{ strokeDasharray: '3 3', stroke: '#a855f7' }}
-                contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '0.5rem' }}
-                labelStyle={{ color: '#f3f4f6' }}
+                contentStyle={{
+                  backgroundColor: 'rgba(31, 41, 55, 0.9)',
+                  backdropFilter: 'blur(5px)',
+                  border: '1px solid #4b5563',
+                  borderRadius: '0.5rem'
+                }}
+                itemStyle={{ color: '#e5e7eb' }}
+                labelStyle={{ color: '#e5e7eb', fontWeight: 'bold' }}
               />
               <Legend />
-              <Scatter name="Non-Diabetic" data={nonDiabeticData} fill="#3b82f6" opacity={0.7} />
-              <Scatter name="Diabetic" data={diabeticData} fill="#f472b6" opacity={0.7} />
+              <Scatter
+                name="Non-Diabetic"
+                data={nonDiabeticData}
+                fill="#3b82f6"
+                opacity={0.7}
+                activeDot={{ r: 8, stroke: 'rgba(59, 130, 246, 0.5)', strokeWidth: 2, fill: '#3b82f6',opacity={1.0} }}
+              />
+              <Scatter
+                name="Diabetic"
+                data={diabeticData}
+                fill="#f472b6"
+                opacity={0.7}
+                activeDot={{ r: 8, stroke: 'rgba(244, 114, 182, 0.5)', strokeWidth: 2, fill: '#f472b6',opacity={1.0} }}
+              />
             </ScatterChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -356,7 +375,6 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <h4 className="font-semibold text-gray-200 mb-2">Classification Report</h4>
-              {/* --- 1. SCROLLBAR FIX --- */}
               <pre className="p-3 bg-gray-900/50 rounded-lg text-sm text-gray-300 overflow-x-auto dark-scrollbar">
                 {`                precision    recall  f1-score   support
 
@@ -441,7 +459,7 @@ export default function DashboardPage() {
                 </tr>
                 <tr className="border-b border-gray-800">
                   <td className="py-2">V1: Leaky Model</td>
-                  <td className="py-2">0.999</td>
+                  <td className="py-2">0.998</td>
                   <td className="py-2">99.5%</td>
                   <td className="py-2">
                     <span className="flex items-center"><AlertTriangle size={14} className="text-red-500 mr-1.5" />Textbook data leakage. Unusable.</span>
