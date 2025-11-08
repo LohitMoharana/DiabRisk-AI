@@ -330,7 +330,7 @@ export default function DashboardPage() {
                 stroke="#9ca3af"
                 tick={{ fill: '#d1d5db' }}
               />
-              {/* --- 1. TOOLTIP & GLOW FIXES --- */}
+              {/* --- TOOLTIP & GLOW FIXES --- */}
               <Tooltip
                 cursor={{ strokeDasharray: '3 3', stroke: '#a855f7' }}
                 contentStyle={{
@@ -348,14 +348,14 @@ export default function DashboardPage() {
                 data={nonDiabeticData}
                 fill="#3b82f6"
                 opacity={0.7}
-                activeDot={{ r: 8, stroke: 'rgba(59, 130, 246, 0.5)', strokeWidth: 2, fill: '#3b82f6',opacity={1.0} }}
+                activeDot={{ r: 8, stroke: 'rgba(59, 130, 246, 0.5)', strokeWidth: 2, fill: '#3b82f6', opacity: 1.0 }}
               />
               <Scatter
                 name="Diabetic"
                 data={diabeticData}
                 fill="#f472b6"
                 opacity={0.7}
-                activeDot={{ r: 8, stroke: 'rgba(244, 114, 182, 0.5)', strokeWidth: 2, fill: '#f472b6',opacity={1.0} }}
+                activeDot={{ r: 8, stroke: 'rgba(244, 114, 182, 0.5)', strokeWidth: 2, fill: '#f472b6', opacity: 1.0 }}
               />
             </ScatterChart>
           </ResponsiveContainer>
