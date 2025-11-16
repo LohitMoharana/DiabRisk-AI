@@ -466,6 +466,22 @@ export default function DashboardPage() {
                   </td>
                 </tr>
                 <tr className="border-b border-gray-800">
+                  <td className="py-2">Random Forest</td>
+                  <td className="py-2">0.872</td>
+                  <td className="py-2">18.4%</td>
+                  <td className="py-2">
+                    <span className="flex items-center"><AlertTriangle size={14} className="text-red-500 mr-1.5" />Unsafe. Catastrophic recall misses 81% of cases.</span>
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-800">
+                  <td className="py-2">Logistic Regression</td>
+                  <td className="py-2">0.865</td>
+                  <td className="py-2">84.3%</td>
+                  <td className="py-2">
+                    <span className="flex items-center"><Info size={14} className="text-blue-500 mr-1.5" />Excellent baseline, high recall.</span>
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-800">
                   <td className="py-2">
                     <a
                       href="https://pmc.ncbi.nlm.nih.gov/articles/PMC11931972/"
