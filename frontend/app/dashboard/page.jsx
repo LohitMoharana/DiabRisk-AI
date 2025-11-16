@@ -190,9 +190,9 @@ export default function DashboardPage() {
           }}
         >
           <MetricCard title="Model" value="XGBoost (Tuned)" icon={<Zap size={20} className="text-white"/>} />
-          <MetricCard title="ROC AUC" value="0.867" icon={<CheckCircle size={20} className="text-white"/>} />
-          <MetricCard title="Accuracy" value="73.4%" icon={<Info size={20} className="text-white"/>} />
-          <MetricCard title="Diabetic Recall" value="88.0%" icon={<CheckCircle size={20} className="text-white"/>} />
+          <MetricCard title="ROC AUC" value="0.873" icon={<CheckCircle size={20} className="text-white"/>} />
+          <MetricCard title="Accuracy" value="73.9%" icon={<Info size={20} className="text-white"/>} />
+          <MetricCard title="Diabetic Recall" value="88.1%" icon={<CheckCircle size={20} className="text-white"/>} />
         </motion.div>
 
         {/* --- Model Features --- */}
@@ -442,11 +442,11 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 <tr className="border-b border-gray-800">
-                  <td className="py-2 text-purple-300 font-bold">V3: Tuned Model (Live)</td>
-                  <td className="py-2 font-bold">0.867</td>
-                  <td className="py-2 font-bold">88.0%</td>
+                  <td className="py-2 text-purple-300 font-bold">V3: XGBoost (Tuned)</td>
+                  <td className="py-2 font-bold">0.873</td>
+                  <td className="py-2 font-bold">88.1%</td>
                   <td className="py-2">
-                    <span className="flex items-center"><CheckCircle size={14} className="text-green-500 mr-1.5" />Optimized for safety (high recall).</span>
+                    <span className="flex items-center"><CheckCircle size={14} className="text-green-500 mr-1.5" />**Selected Model.** Best balance of AUC & Recall.</span>
                   </td>
                 </tr>
                 <tr className="border-b border-gray-800">
